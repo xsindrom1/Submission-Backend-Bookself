@@ -60,14 +60,13 @@ const addBooks = (request, h) => {
   // menecek apakah newBook telah ter push
   const isSuccess = books.filter((book) => book.id === id).length > 0;
 
-  const response = h
-    .response({
-      status: 'success',
-      message: 'Buku berhasil ditambahkan',
-      data: {
-        bookId: id,
-      },
-    });
+  const response = h.response({
+    status: 'success',
+    message: 'Buku berhasil ditambahkan',
+    data: {
+      bookId: id,
+    },
+  });
 
   if (isSuccess) {
     response.code(201);
@@ -77,8 +76,29 @@ const addBooks = (request, h) => {
 
 // handler kriteria 4
 const getAllBook = (request, h) => {
-  // memecah body books menjadi value yang diminta
-  const booksData = books.map((book) => ({
+  const { name, reading, finished } = request.query;
+
+  // untuk menampung filter book
+  let filteredBooks = books;
+
+  if (name) {
+    const lowerCaseName = name.toLowerCase();// agar tidak case sensitiv
+    filteredBooks = filteredBooks.filter((book) => book.name.toLowerCase().includes(lowerCaseName));
+  }
+
+  if (reading !== undefined) {
+    const isReading = parseInt(reading, 10) === 1;// check status buku reding
+    filteredBooks = filteredBooks.filter((book) => book.reading === isReading);
+  }
+
+  if (finished !== undefined) {
+    const isFinished = parseInt(finished, 10) === 1;// check status buku finish
+    filteredBooks = filteredBooks.filter(
+      (book) => book.finished === isFinished,
+    );
+  }
+
+  const booksData = filteredBooks.map((book) => ({
     id: book.id,
     name: book.name,
     publisher: book.publisher,
@@ -203,10 +223,6 @@ const deleteBookById = (request, h) => {
   });
   response.code(404);
   return response;
-};
-
-module.exports = {
-  deleteBookById,
 };
 
 module.exports = {
